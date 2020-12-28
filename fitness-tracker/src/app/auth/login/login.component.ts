@@ -1,8 +1,9 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Observable} from 'rxjs';
 import { UIService } from 'src/app/shared/ui.service';
-
+import { Store } from '@ngrx/store';
+import * as fromRoot from '../../app.reducer';
 import { AuthService } from '../auth.service';
 
 @Component({
@@ -10,21 +11,18 @@ import { AuthService } from '../auth.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent implements OnInit, OnDestroy {
+export class LoginComponent implements OnInit{
   loginForm: FormGroup;
-  isLoading = false;
-  private loadingSubs: Subscription;
-  constructor(private authService: AuthService, private uiService: UIService) {}
+  isLoading$ : Observable<boolean>;
+  
+  constructor(private authService: AuthService, 
+    private uiService: UIService,
+    private store: Store<fromRoot.State>) {}
   
   
-  ngOnDestroy(): void {
-    this.loadingSubs.unsubscribe();
-  }
-
   ngOnInit() {
-    this.loadingSubs = this.uiService.loadingStateChanged.subscribe(isLoading => {
-      this.isLoading = isLoading;
-    });
+    
+    this.isLoading$ = this.store.select(fromRoot.getIsLoading);
     this.loginForm = new FormGroup({
       email: new FormControl('', {
         validators: [Validators.required, Validators.email]
